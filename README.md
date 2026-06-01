@@ -53,4 +53,4 @@ Add project screenshots here.
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/AI-Crop-Recommendation-System.git
+git clone https://github.com/vaibhavupadhyay001/Krishijeevan.git
