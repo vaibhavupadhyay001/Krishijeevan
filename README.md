@@ -17,7 +17,7 @@ An AI-powered web application that helps users identify crops and receive intell
 - **CSS3**
 - **JavaScript (ES6+)**
 - **OpenAI API**
-- **Camera API (MediaDevices API)**
+- **Camera API **
 
 ## 📋 How It Works
 
@@ -43,10 +43,6 @@ An AI-powered web application that helps users identify crops and receive intell
 - Yield prediction
 - Multi-language support
 - Farmer dashboard
-
-## 📸 Screenshots
-
-Add project screenshots here.
 
 ## 🏃‍♂️ Getting Started
 
