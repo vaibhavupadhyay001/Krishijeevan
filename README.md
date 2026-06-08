@@ -32,7 +32,7 @@ An AI-powered web application that helps users identify crops and receive intell
 - Interactive camera integration
 - AI-assisted decision making
 - Fast and responsive design
-- Easy-to-use interface
+- Easy to use interface
 - Modern web technologies
 
 ## 🔮 Future Improvements
@@ -47,5 +47,5 @@ An AI-powered web application that helps users identify crops and receive intell
 
 Clone the repository:
 
-```bash
+`bash
 git clone https://github.com/vaibhavupadhyay001/Krishijeevan.git
