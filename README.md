@@ -7,9 +7,9 @@ An AI-powered web application that helps users identify crops and receive intell
 -  Capture crop images directly from your device camera
 -  Apply image filters before analysis
 -  AI-powered crop recommendations using OpenAI API
-- ⚡ Real-time image processing and analysis
-- 📱 Responsive and user-friendly interface
-- 🌱 Crop identification and recommendation support
+-  Real-time image processing and analysis
+-  Responsive and user-friendly interface
+-  Crop identification and recommendation support
 
 ## Tech Stack
 
