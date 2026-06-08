@@ -42,7 +42,6 @@ An AI-powered web application that helps users identify crops and receive intell
 - Soil data integration
 - Yield prediction
 - Multi-language support
-- Farmer dashboard
 
 ## 🏃‍♂️ Getting Started
 
