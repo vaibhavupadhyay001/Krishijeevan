@@ -1,6 +1,6 @@
 # 🌾 AI Crop Recommendation System
 
-An AI-powered web application that helps users identify crops and receive intelligent crop recommendations using image analysis. The system integrates camera functionality, image filters, and OpenAI API to provide a seamless and interactive experience.
+An AI-powered web application that helps users identify crops and receive intelligent crop recommendations using image analysis. The system integrates camera functionality, image filters, and OpenAI API to provide a seamless and interactive experience...
 
 ## 🚀 Features
 
