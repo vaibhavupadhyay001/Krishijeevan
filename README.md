@@ -1,8 +1,8 @@
-# 🌾 AI Crop Recommendation System
+# AI Crop Recommendation System
 
 An AI-powered web application that helps users identify crops and receive intelligent crop recommendations using image analysis. The system integrates camera functionality, image filters, and OpenAI API to provide a seamless and interactive experience...
 
-## 🚀 Features
+## Features
 
 - 📷 Capture crop images directly from your device camera
 - 🎨 Apply image filters before analysis
@@ -11,7 +11,7 @@ An AI-powered web application that helps users identify crops and receive intell
 - 📱 Responsive and user-friendly interface
 - 🌱 Crop identification and recommendation support
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **HTML5**
 - **CSS3**
@@ -19,7 +19,7 @@ An AI-powered web application that helps users identify crops and receive intell
 - **OpenAI API**
 - **Camera API **
 
-## 📋 How It Works
+## How It Works
 
 1. Open the application.
 2. Capture a crop image using the built-in camera.
@@ -27,7 +27,7 @@ An AI-powered web application that helps users identify crops and receive intell
 4. Submit the image for AI analysis.
 5. Receive crop recommendations and insights.
 
-## 🎯 Key Highlights
+## Key Highlights
 
 - Interactive camera integration
 - AI-assisted decision making
@@ -35,7 +35,7 @@ An AI-powered web application that helps users identify crops and receive intell
 - Easy-to-use interface
 - Modern web technologies
 
-## 🔮 Future Improvements
+## Future Improvements
 
 - Crop disease detection
 - Weather-based recommendations
@@ -43,7 +43,7 @@ An AI-powered web application that helps users identify crops and receive intell
 - Yield prediction
 - Multi-language support
 
-## 🏃‍♂️ Getting Started
+## Getting Started
 
 Clone the repository:
 
