@@ -4,14 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us — krishijeevan</title>
-  <link rel="stylesheet" href="style.css">
-
-
-
+  <link rel="stylesheet" href="/STYLES/style.css">
 
 
   <style>
-    /* ✅ Add responsive navbar styles */
+    
     .hamburger {
       display: none;
       flex-direction: column;
@@ -64,17 +61,6 @@
     }
   </style>
 
-
-
-
-
-
-
-
-
-
-
-
 </head>
 <body>
   <header class="menu">
@@ -82,7 +68,7 @@
 
 
 
-    <!-- ✅ Added Hamburger icon -->
+
     <div class="hamburger" id="hamburger">
       <div></div>
       <div></div>
@@ -94,12 +80,12 @@
 
 
     <nav class="menu-links" id="menuLinks">
-      <a href="index.html">Home</a>
-      <a href="library.html">Library</a>
-      <a href="products.html">Find Products</a>
-      <a href="app.html">Schemes</a>
-      <a href="news.html">News</a>
-      <a href="about.html">About</a>
+      <a href="/HTML/index.html">Home</a>
+      <a href="/HTML/library.html">Library</a>
+      <a href="/HTML/products.html">Find Products</a>
+      <a href="/HTML/app.html">Schemes</a>
+      <a href="/HTML/news.html">News</a>
+      <a href="/HTML/about.html">About</a>
     </nav>
   </header>
 
@@ -139,16 +125,7 @@
       We plan to develop mobile apps for real-time monitoring, automated precision farming tools, and AI-powered marketplaces for seeds, fertilizers, and crop treatments. 
       Our vision is to make farming smarter, safer, and more profitable using sustainable AI solutions.
     </p>
-
-
-
-
   </div>
-
-
-  
-
-
 
 </section>
 
@@ -245,13 +222,12 @@
     color: #555;
   }
 
-  /* Fade In Up Animation */
   @keyframes fadeInUp {
     0% { opacity: 0; transform: translateY(30px); }
     100% { opacity: 1; transform: translateY(0); }
   }
 
-  /* Responsive */
+
   @media (max-width: 820px) {
     .standout-grid { grid-template-columns: 1fr; }
     .standout-box { padding: 20px; }
@@ -261,13 +237,10 @@
 
 
 
-  <script src="script.js"></script>
+  <script src="/SCRIPTS/script.js"></script>
 
 
 
-  
-
-  <!-- ✅ Toggle Navbar JS -->
   <script>
     const hamburger = document.getElementById('hamburger');
     const menuLinks = document.getElementById('menuLinks');
