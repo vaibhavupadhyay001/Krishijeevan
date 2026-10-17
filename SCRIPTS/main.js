@@ -1,6 +1,6 @@
-
 document.addEventListener("DOMContentLoaded", () => {
-  const API_URL = "http://localhost:3000/api/analyze";
+  // Production backend hosted on Render
+  const API_URL = "https://krishijeevan.onrender.com/api/analyze";
 
   const clickPhotoBtn = document.getElementById("clickPhoto");
   const galleryBtn = document.getElementById("uploadGallery");
@@ -75,17 +75,20 @@ document.addEventListener("DOMContentLoaded", () => {
       switchCameraBtn.style.display = "inline-block";
       analyzeBtn.style.display = "inline-block";
       analyzeBtn.textContent = "Analyze Crop / फसल विश्लेषण करें";
+      analyzeBtn.disabled = false;
 
       capturedImage = null;
       resultShown = false;
-
     } catch (error) {
       console.error("Camera error:", error);
 
       const messages = {
-        NotAllowedError: "Camera permission denied. Please allow camera access.",
-        NotFoundError: "No camera was found on this device.",
-        NotReadableError: "Camera is already being used by another application."
+        NotAllowedError:
+          "Camera permission denied. Please allow camera access.",
+        NotFoundError:
+          "No camera was found on this device.",
+        NotReadableError:
+          "Camera is already being used by another application."
       };
 
       alert(messages[error.name] || "Unable to access the camera.");
@@ -101,6 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // SWITCH CAMERA
   switchCameraBtn.addEventListener("click", () => {
     useFrontCamera = !useFrontCamera;
     startCamera();
@@ -108,7 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // GALLERY BUTTON
   galleryBtn.addEventListener("click", () => {
-    console.log("Gallery button clicked.");
     galleryInput.click();
   });
 
@@ -116,10 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
   galleryInput.addEventListener("change", event => {
     const file = event.target.files?.[0];
 
-    if (!file) {
-      console.log("No file selected.");
-      return;
-    }
+    if (!file) return;
 
     if (!file.type.startsWith("image/")) {
       alert("Please select a valid image file.");
@@ -151,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       switchCameraBtn.style.display = "none";
       analyzeBtn.style.display = "inline-block";
+      analyzeBtn.disabled = false;
       analyzeBtn.textContent = "Analyze Crop / फसल विश्लेषण करें";
 
       resultBox.style.display = "none";
@@ -158,11 +159,9 @@ document.addEventListener("DOMContentLoaded", () => {
       galleryBtn.style.display = "flex";
 
       resultShown = false;
+      galleryInput.value = "";
 
       console.log("Image selected successfully:", file.name);
-
-      // Allow selecting the same file again.
-      galleryInput.value = "";
     };
 
     reader.onerror = () => {
@@ -174,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
     reader.readAsDataURL(file);
   });
 
-  // ANALYZE / BACK
+  // ANALYZE / BACK BUTTON
   analyzeBtn.addEventListener("click", async () => {
     if (resultShown) {
       stopCamera();
@@ -196,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let imageData = capturedImage;
 
-    // Capture frame from camera.
+    // Capture frame from camera
     if (!imageData && cameraPreview.srcObject) {
       if (!cameraPreview.videoWidth || !cameraPreview.videoHeight) {
         alert("Camera is not ready yet. Please wait a moment.");
@@ -248,6 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: {
           "Content-Type": "application/json"
         },
+        // Keep the property name expected by your existing backend
         body: JSON.stringify({ imageData })
       });
 
@@ -255,15 +255,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!response.ok) {
         console.error("Backend error:", response.status, data);
+
         resultBox.textContent =
-          data.error || "Crop analysis failed. Please try again.";
+          data.error ||
+          data.detail ||
+          `Crop analysis failed (HTTP ${response.status}). Please try again.`;
+
         return;
       }
 
       const raw = data.result || "";
 
       if (!raw) {
-        resultBox.textContent = "No analysis was returned. Please try again.";
+        resultBox.textContent =
+          "No analysis was returned. Please try again.";
         return;
       }
 
@@ -271,10 +276,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const diseaseMatch = raw.match(/disease:\s*(.+)/i);
       const solutionMatch = raw.match(/solution:\s*(.+)/i);
 
-      const crop = cropMatch ? cropMatch[1].trim() : "Unknown";
+      const crop = cropMatch
+        ? cropMatch[1].trim()
+        : "Unknown";
+
       const disease = diseaseMatch
         ? diseaseMatch[1].trim()
         : "Unable to identify";
+
       const solution = solutionMatch
         ? solutionMatch[1].trim()
         : "Consult a local agriculture expert";
@@ -287,18 +296,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       analyzeBtn.textContent = "⬅ Back";
       resultShown = true;
-
     } catch (error) {
       console.error("Backend connection error:", error);
 
       resultBox.textContent =
-        "Cannot connect to the backend. Check that the Node.js server is running on port 3000.";
+        "Unable to connect to the crop analysis server. Please check your internet connection and try again.";
     } finally {
       isAnalyzing = false;
       analyzeBtn.disabled = false;
     }
   });
 
+  // Safely display AI-generated text
   function escapeHTML(value) {
     return String(value).replace(/[&<>"']/g, character => ({
       "&": "&amp;",
@@ -309,5 +318,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })[character]);
   }
 
+  // Release camera when leaving the page
   window.addEventListener("pagehide", stopCamera);
 });

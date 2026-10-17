@@ -209,9 +209,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       // Request goes to YOUR backend, not directly to OpenWeatherMap.
-      const response = await fetch(
-        `http://localhost:3000/api/weather?city=${encodeURIComponent(city)}`
-      );
+    const response = await fetch(
+  `https://krishijeevan.onrender.com/api/weather?city=${encodeURIComponent(city)}`
+);
 
       const data = await response.json();
 
