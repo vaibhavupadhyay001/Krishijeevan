@@ -167,60 +167,124 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-//weather
 
-
-
-
-
-const apiKey = "dd43d3d2e1ddf30ff7254ffb9eda9303"; // your API key
+/* ================= WEATHER API ================= */
 
 document.addEventListener("DOMContentLoaded", () => {
   const cityInput = document.getElementById("cityInput");
-  const locEl     = document.getElementById("weatherLocation");
-  const tempEl    = document.getElementById("weatherTemp");
-  const condEl    = document.getElementById("weatherCondition");
+  const locEl = document.getElementById("weatherLocation");
+  const tempEl = document.getElementById("weatherTemp");
+  const condEl = document.getElementById("weatherCondition");
 
-  function showMessage(msg) {
-    locEl.textContent = msg;
+  if (!cityInput || !locEl || !tempEl || !condEl) {
+    console.error("Weather HTML elements not found.");
+    return;
+  }
+
+  let typingTimer;
+  let requestId = 0;
+
+  function showMessage(message) {
+    locEl.textContent = message;
     tempEl.textContent = "";
     condEl.textContent = "";
+
+    const humidityEl = document.getElementById("weatherHumidity");
+    const windEl = document.getElementById("weatherWind");
+
+    if (humidityEl) humidityEl.textContent = "";
+    if (windEl) windEl.textContent = "";
   }
 
   async function fetchWeather(city) {
+    city = city.trim();
+
     if (!city) {
-      showMessage("⚠️ Please enter a city");
+      showMessage("⚠️ Please enter a city.");
       return;
     }
 
+    const currentRequest = ++requestId;
+    showMessage("⏳ Loading weather...");
+
     try {
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
-      const response = await fetch(url);
+      // Request goes to YOUR backend, not directly to OpenWeatherMap.
+      const response = await fetch(
+        `http://localhost:3000/api/weather?city=${encodeURIComponent(city)}`
+      );
+
       const data = await response.json();
 
+      // Ignore older responses if another request has started.
+      if (currentRequest !== requestId) return;
+
       if (!response.ok) {
-        showMessage("⚠️ " + (data.message || "City not found"));
+        showMessage(`⚠️ ${data.error || "Unable to fetch weather."}`);
+        console.error("Weather API error:", response.status, data);
         return;
       }
 
-      locEl.textContent = `📍 Location: ${data.name}, ${data.sys.country}`;
-      tempEl.textContent = `🌡️ Temperature: ${Math.round(data.main.temp)}°C`;
-      condEl.textContent = `☁️ Condition: ${data.weather[0].description}`;
-    } catch (err) {
-      console.error("Fetch error:", err);
-      showMessage("⚠️ Error fetching weather");
+      locEl.textContent =
+        `📍 Location: ${data.location}, ${data.country}`;
+
+      tempEl.textContent =
+        `🌡️ Temperature: ${data.temperature}°C`;
+
+      condEl.textContent =
+        `☁️ Condition: ${data.condition}`;
+
+      const humidityEl = document.getElementById("weatherHumidity");
+      const windEl = document.getElementById("weatherWind");
+
+      if (humidityEl) {
+        humidityEl.textContent = `💧 Humidity: ${data.humidity}%`;
+      }
+
+      if (windEl) {
+        windEl.textContent = `💨 Wind: ${data.windSpeed} m/s`;
+      }
+
+      console.log("Weather loaded:", data.location);
+
+    } catch (error) {
+      if (currentRequest !== requestId) return;
+
+      console.error("Weather fetch error:", error);
+      showMessage(
+        "⚠️ Cannot connect to weather server. Is the backend running?"
+      );
     }
   }
 
-  // Auto fetch weather as user types (with small delay)
-  let typingTimer;
+  // Fetch weather after typing stops.
   cityInput.addEventListener("input", () => {
     clearTimeout(typingTimer);
+
+    const city = cityInput.value.trim();
+
+    if (!city) {
+      requestId++;
+      showMessage("Enter a city to see its weather.");
+      return;
+    }
+
     typingTimer = setTimeout(() => {
-      fetchWeather(cityInput.value.trim());
-    }, 800); // wait 800ms after typing stops
+      fetchWeather(city);
+    }, 800);
   });
+
+  // Press Enter to fetch immediately.
+  cityInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      clearTimeout(typingTimer);
+      fetchWeather(cityInput.value);
+    }
+  });
+
+  showMessage("Enter a city to see its weather.");
 });
+
 
 
 

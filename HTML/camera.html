@@ -1,75 +1,292 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Crop Analyzer</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Crop Analyzer | फसल विश्लेषक</title>
 
-<style>
-  body { font-family: Arial, sans-serif; background: #f4f7f9; margin: 0; padding: 0; }
-  header { background: rgb(51, 154, 97); color: #fff; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; }
-  .upload-section { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 10px; gap: 20px; }
-  .upload-options { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
-  .upload-card { width: 200px; height: 200px; background: #fff; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; padding: 20px; }
-  .upload-card:hover { transform: translateY(-6px); box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
-  .upload-card img { width: 60px; margin-bottom: 10px; }
-  .upload-card p { font-size: 16px; color: #333; font-weight: 500; }
-  video, img#preview { max-width: 100%; border-radius: 12px; margin-top: 15px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-  #switchCameraBtn, #analyzeBtn { padding: 12px 18px; background: rgb(53, 160, 101); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; display: none; }
-  #resultBox { background: #fff; margin-top: 10px; padding: 20px; border-radius: 12px; max-width: 90%; width: 500px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); display: none; font-size: 17px; color: #333; line-height: 1.6; }
-  #resultBox b { display: block; margin-top: 8px; color: #2e7d32; font-size: 18px; }
-  .steps-section { background: #fff; width: 90%; max-width: 700px; padding: 20px 25px; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-  .steps-section h3 { text-align: center; margin-bottom: 20px; color:rgb(53, 160, 101); }
-  .steps-section ol { font-size: 16px; color: #444; line-height: 1.8; }
-  .steps-section ol li { margin-bottom: 12px; }
-  .steps-section .hindi { font-size: 15px; color: #555; margin-top: 3px; }
-</style>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7f9;
+      margin: 0;
+      color: #333;
+    }
+
+    header {
+      background: rgb(51, 154, 97);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .upload-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 25px 12px;
+      gap: 20px;
+    }
+
+    .upload-options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 18px;
+      width: 100%;
+    }
+
+    .upload-card {
+      position: relative;
+      width: 220px;
+      min-height: 200px;
+      padding: 20px;
+      background: white;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .upload-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .upload-card:focus-visible {
+      outline: 3px solid #176b3a;
+      outline-offset: 3px;
+    }
+
+    .upload-card img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 12px;
+      pointer-events: none;
+    }
+
+    .upload-card p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #333;
+      pointer-events: none;
+    }
+
+    #galleryInput {
+      display: none;
+    }
+
+    .steps-section {
+      width: 95%;
+      max-width: 700px;
+      background: white;
+      padding: 20px 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .steps-section h3 {
+      color: rgb(53, 160, 101);
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .steps-section ol {
+      font-size: 15px;
+      line-height: 1.8;
+      padding-left: 22px;
+    }
+
+    .steps-section li {
+      margin-bottom: 12px;
+    }
+
+    .hindi {
+      display: block;
+      color: #555;
+      font-size: 14px;
+      margin-top: 3px;
+    }
+
+    video,
+    #preview {
+      display: none;
+      width: 100%;
+      max-width: 500px;
+      max-height: 450px;
+      object-fit: contain;
+      background: #e9ecef;
+      border-radius: 12px;
+      margin-top: 5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .action-btn {
+      display: none;
+      padding: 12px 20px;
+      background: rgb(53, 160, 101);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .action-btn:hover {
+      background: rgb(40, 130, 80);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #resultBox {
+      display: none;
+      width: 100%;
+      max-width: 540px;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      font-size: 16px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+    }
+
+    #resultBox b {
+      color: #2e7d32;
+    }
+
+    @media (max-width: 480px) {
+      header {
+        font-size: 20px;
+        padding: 18px 10px;
+      }
+
+      .upload-card {
+        width: min(100%, 165px);
+        min-height: 175px;
+        padding: 12px;
+      }
+
+      .steps-section {
+        padding: 18px;
+      }
+
+      video,
+      #preview {
+        max-width: 95%;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <header>Crop Analyzer / फसल विश्लेषक</header>
 
-<header>Crop Analyzer / फसल विश्लेषक</header>
+  <main class="upload-section">
+    <div class="upload-options">
 
-<section class="upload-section">
+      <!-- Camera card -->
+      <div
+        class="upload-card"
+        id="clickPhoto"
+        role="button"
+        tabindex="0"
+        aria-label="Open camera"
+      >
+        <img
+          src="https://img.icons8.com/ios-filled/100/000000/camera.png"
+          alt=""
+        >
+        <p>
+          Click Image to Upload<br>
+          फोटो क्लिक करके अपलोड करें
+        </p>
+      </div>
 
-  <div class="upload-options">
-    <div class="upload-card" id="clickPhoto">
-      <img src="https://img.icons8.com/ios-filled/100/000000/camera.png" alt="Click Image">
-      <p>Click Image to Upload<br>फोटो क्लिक करके अपलोड करें</p>
+      <!-- Gallery card: opened by main.js -->
+      <button
+        type="button"
+        class="upload-card"
+        id="uploadGallery"
+        aria-label="Upload image from gallery"
+      >
+        <img
+          src="https://img.icons8.com/ios-filled/100/000000/picture.png"
+          alt=""
+        >
+        <p>
+          Upload from Gallery<br>
+          गैलरी से अपलोड करें
+        </p>
+      </button>
+
+      <input
+        type="file"
+        id="galleryInput"
+        accept="image/*"
+        aria-label="Choose an image from your device"
+      >
     </div>
-    <div class="upload-card" id="uploadGallery">
-      <img src="https://img.icons8.com/ios-filled/100/000000/picture.png" alt="Upload from Gallery">
-      <p>Upload from Gallery<br>गैलरी से अपलोड करें</p>
-      <input type="file" id="galleryInput" accept="image/*" style="display:none;">
-    </div>
-  </div>
 
-  <div class="steps-section" id="stepsSection">
-    <h3>Steps to Upload / अपलोड करने के स्टेप्स</h3>
-    <ol>
-      <li>Click on "Click Image to Upload" to take a photo using your camera. <span class="hindi">कॅमरा से फोटो लेने के लिए "Click Image to Upload" पर क्लिक करें।</span></li>
-      <li>Click on "Upload from Gallery" to select an existing photo from your device. <span class="hindi">अपने डिवाइस से पहले से मौजूद फोटो चुनने के लिए "Upload from Gallery" पर क्लिक करें।</span></li>
-      <li>Ensure the photo is clear and focused for accurate results. <span class="hindi">सुनिश्चित करें कि फोटो स्पष्ट और फोकस में हो।</span></li>
-      <li>Once selected, the image will be uploaded automatically. <span class="hindi">एक बार चुनने के बाद, फोटो अपने आप अपलोड हो जाएगी।</span></li>
-      <li>You can then proceed to the next steps for analysis. <span class="hindi">इसके बाद आप अगले स्टेप्स के लिए आगे बढ़ सकते हैं।</span></li>
-    </ol>
-  </div>
+    <!-- Instructions -->
+    <section class="steps-section" id="stepsSection">
+      <h3>Steps to Upload / अपलोड करने के स्टेप्स</h3>
 
-  <video id="cameraPreview" autoplay playsinline></video>
-  <button id="switchCameraBtn">🔄 Switch Camera</button>
-  <img id="preview" />
+      <ol>
+        <li>
+          Click the camera card to take a photo.
+          <span class="hindi">फोटो लेने के लिए कैमरा कार्ड पर क्लिक करें।</span>
+        </li>
+        <li>
+          Click the gallery card to select an existing image.
+          <span class="hindi">पहले से मौजूद फोटो चुनने के लिए गैलरी कार्ड पर क्लिक करें।</span>
+        </li>
+        <li>
+          Make sure the crop image is clear and focused.
+          <span class="hindi">फोटो साफ और फोकस में होनी चाहिए।</span>
+        </li>
+        <li>
+          Click Analyze Crop to get the analysis.
+          <span class="hindi">विश्लेषण के लिए Analyze Crop पर क्लिक करें।</span>
+        </li>
+      </ol>
+    </section>
 
-  <button id="analyzeBtn">Analyze Crop / फसल विश्लेषण करें</button>
+    <video id="cameraPreview" autoplay playsinline></video>
 
-  <div id="resultBox"></div>
+    <button type="button" id="switchCameraBtn" class="action-btn">
+      🔄 Switch Camera
+    </button>
 
-</section>
+    <img id="preview" alt="Selected crop image">
 
-<!-- Load API Key first -->
-<script src="/SCRIPTS/script.js"></script>
-<!-- Load main JS -->
-<script src="/SCRIPTS/main.js"></script>
+    <button type="button" id="analyzeBtn" class="action-btn">
+      Analyze Crop / फसल विश्लेषण करें
+    </button>
 
+    <div id="resultBox" aria-live="polite"></div>
+  </main>
+
+  <script type="module" src="/SCRIPTS/main.js"></script>
 </body>
 </html>

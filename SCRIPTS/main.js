@@ -1,153 +1,313 @@
-// Use key from config.js
-const OPENAI_API_KEY = window.OPENAI_API_KEY;
 
-const clickPhotoBtn = document.getElementById('clickPhoto');
-const galleryBtn = document.getElementById('uploadGallery');
-const galleryInput = document.getElementById('galleryInput');
-const cameraPreview = document.getElementById('cameraPreview');
-const preview = document.getElementById('preview');
-const analyzeBtn = document.getElementById('analyzeBtn');
-const switchCameraBtn = document.getElementById('switchCameraBtn');
-const resultBox = document.getElementById('resultBox');
-const stepsSection = document.getElementById('stepsSection');
+document.addEventListener("DOMContentLoaded", () => {
+  const API_URL = "http://localhost:3000/api/analyze";
 
-let capturedImage = null;
-let currentStream = null;
-let useFrontCamera = false;
-let resultShown = false;
+  const clickPhotoBtn = document.getElementById("clickPhoto");
+  const galleryBtn = document.getElementById("uploadGallery");
+  const galleryInput = document.getElementById("galleryInput");
+  const cameraPreview = document.getElementById("cameraPreview");
+  const preview = document.getElementById("preview");
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const switchCameraBtn = document.getElementById("switchCameraBtn");
+  const resultBox = document.getElementById("resultBox");
+  const stepsSection = document.getElementById("stepsSection");
 
-// Start camera
-async function startCamera() {
-  if (currentStream) currentStream.getTracks().forEach(track => track.stop());
-  try {
-    const constraints = { video: { facingMode: useFrontCamera ? "user" : "environment" } };
-    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-    cameraPreview.srcObject = currentStream;
-    cameraPreview.style.display = 'block';
-    switchCameraBtn.style.display = 'inline-block';
-    analyzeBtn.style.display = 'inline-block';
-    analyzeBtn.textContent = "Analyze Crop / फसल विश्लेषण करें";
-    preview.style.display = 'none';
-    resultBox.style.display = 'none';
-    galleryBtn.style.display = 'inline-block';
-    resultShown = false;
-  } catch (err) {
-    alert('Camera access denied / कैमरा एक्सेस अस्वीकृत');
+  if (
+    !clickPhotoBtn ||
+    !galleryBtn ||
+    !galleryInput ||
+    !cameraPreview ||
+    !preview ||
+    !analyzeBtn ||
+    !switchCameraBtn ||
+    !resultBox ||
+    !stepsSection
+  ) {
+    console.error("Crop Analyzer: Required HTML elements are missing.");
+    return;
   }
-}
 
-// Click photo
-clickPhotoBtn.addEventListener('click', () => {
-  stepsSection.style.display = 'none';
-  startCamera();
-});
+  let capturedImage = null;
+  let currentStream = null;
+  let useFrontCamera = false;
+  let resultShown = false;
+  let isAnalyzing = false;
 
-switchCameraBtn.addEventListener('click', () => {
-  useFrontCamera = !useFrontCamera;
-  startCamera();
-});
+  console.log("Crop Analyzer initialized.");
 
-// File upload
-galleryBtn.addEventListener('click', () => galleryInput.click());
-galleryInput.addEventListener('change', e => {
-  stepsSection.style.display = 'none';
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      capturedImage = ev.target.result;
-      preview.src = capturedImage;
-      preview.style.display = 'block';
-      cameraPreview.style.display = 'none';
-      switchCameraBtn.style.display = 'none';
-      analyzeBtn.style.display = 'inline-block';
-      analyzeBtn.textContent = "Analyze Crop / फसल विश्लेषण करें";
-      galleryBtn.style.display = 'inline-block';
-      resultShown = false;
-    };
-    reader.readAsDataURL(file);
-  }
-});
-
-// Analyze / Back button
-analyzeBtn.addEventListener('click', async () => {
-  if (!resultShown) {
-    let imageData = capturedImage;
-    if (!imageData && cameraPreview.srcObject) {
-      const canvas = document.createElement('canvas');
-      canvas.width = cameraPreview.videoWidth;
-      canvas.height = cameraPreview.videoHeight;
-      canvas.getContext('2d').drawImage(cameraPreview, 0, 0);
-      imageData = canvas.toDataURL('image/jpeg');
-      capturedImage = imageData;
+  // STOP CAMERA
+  function stopCamera() {
+    if (currentStream) {
+      currentStream.getTracks().forEach(track => track.stop());
+      currentStream = null;
     }
-    if (!imageData) { alert("Please capture or upload an image first"); return; }
 
-    cameraPreview.style.display = 'none';
-    switchCameraBtn.style.display = 'none';
-    preview.src = imageData;
-    preview.style.display = 'block';
+    cameraPreview.srcObject = null;
+    cameraPreview.style.display = "none";
+  }
 
-    resultBox.style.display = 'block';
-    resultBox.innerHTML = "Analyzing... कृपया प्रतीक्षा करें...";
+  // START CAMERA
+  async function startCamera() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      alert("Camera unavailable. Please use localhost or HTTPS.");
+      return;
+    }
+
+    stopCamera();
 
     try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${OPENAI_API_KEY}`
+      currentStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: useFrontCamera ? "user" : "environment"
         },
-        body: JSON.stringify({
-          model: "gpt-4.1-mini",
-          messages: [
-            { role: "system", content: "You are an agriculture expert. From the image, detect the crop name and any disease. Respond strictly in this format:\nCrop: <name>\nDisease: <max 5 words>\nSolution: <max 5 words>.\nNothing else." },
-            { role: "user", content: [
-              { type: "text", text: "Analyze this crop image and return crop name, disease, and solution." },
-              { type: "image_url", image_url: { url: imageData } }
-            ]}
-          ]
-        })
+        audio: false
       });
 
-      if (!response.ok) {
-        if (response.status === 401) resultBox.innerHTML = "Please try again.";
-        else if (response.status === 429) resultBox.innerHTML = "⚠️ Too many requests. Try again later.";
-        else resultBox.innerHTML = "⚠️ Model is not responding. Try again later.";
+      cameraPreview.srcObject = currentStream;
+      cameraPreview.style.display = "block";
+      await cameraPreview.play();
+
+      preview.style.display = "none";
+      resultBox.style.display = "none";
+      stepsSection.style.display = "none";
+
+      galleryBtn.style.display = "flex";
+      switchCameraBtn.style.display = "inline-block";
+      analyzeBtn.style.display = "inline-block";
+      analyzeBtn.textContent = "Analyze Crop / फसल विश्लेषण करें";
+
+      capturedImage = null;
+      resultShown = false;
+
+    } catch (error) {
+      console.error("Camera error:", error);
+
+      const messages = {
+        NotAllowedError: "Camera permission denied. Please allow camera access.",
+        NotFoundError: "No camera was found on this device.",
+        NotReadableError: "Camera is already being used by another application."
+      };
+
+      alert(messages[error.name] || "Unable to access the camera.");
+    }
+  }
+
+  clickPhotoBtn.addEventListener("click", startCamera);
+
+  clickPhotoBtn.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      startCamera();
+    }
+  });
+
+  switchCameraBtn.addEventListener("click", () => {
+    useFrontCamera = !useFrontCamera;
+    startCamera();
+  });
+
+  // GALLERY BUTTON
+  galleryBtn.addEventListener("click", () => {
+    console.log("Gallery button clicked.");
+    galleryInput.click();
+  });
+
+  // HANDLE SELECTED IMAGE
+  galleryInput.addEventListener("change", event => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      console.log("No file selected.");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file.");
+      galleryInput.value = "";
+      return;
+    }
+
+    if (file.size > 15 * 1024 * 1024) {
+      alert("Please select an image smaller than 15 MB.");
+      galleryInput.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = event => {
+      if (typeof event.target.result !== "string") {
+        alert("Unable to read the selected image.");
+        galleryInput.value = "";
         return;
       }
 
-      const data = await response.json();
-      const raw = data.choices?.[0]?.message?.content || "⚠️ No result";
+      capturedImage = event.target.result;
 
-      const cropMatch = raw.match(/(?<=crop:)\s*.+/i);
-      const diseaseMatch = raw.match(/(?<=disease:)\s*.+/i);
-      const solutionMatch = raw.match(/(?<=solution:)\s*.+/i);
+      stopCamera();
 
-      const crop = cropMatch ? cropMatch[0].trim() : "Unknown";
-      const disease = diseaseMatch ? diseaseMatch[0].trim() : "No disease found";
-      const solution = solutionMatch ? solutionMatch[0].trim() : "No solution needed.";
+      preview.src = capturedImage;
+      preview.style.display = "block";
+
+      switchCameraBtn.style.display = "none";
+      analyzeBtn.style.display = "inline-block";
+      analyzeBtn.textContent = "Analyze Crop / फसल विश्लेषण करें";
+
+      resultBox.style.display = "none";
+      stepsSection.style.display = "none";
+      galleryBtn.style.display = "flex";
+
+      resultShown = false;
+
+      console.log("Image selected successfully:", file.name);
+
+      // Allow selecting the same file again.
+      galleryInput.value = "";
+    };
+
+    reader.onerror = () => {
+      console.error("Image reading failed.");
+      alert("Unable to read this image. Please try another image.");
+      galleryInput.value = "";
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+  // ANALYZE / BACK
+  analyzeBtn.addEventListener("click", async () => {
+    if (resultShown) {
+      stopCamera();
+
+      resultBox.style.display = "none";
+      preview.style.display = "none";
+      galleryBtn.style.display = "flex";
+      stepsSection.style.display = "block";
+
+      analyzeBtn.style.display = "none";
+      switchCameraBtn.style.display = "none";
+
+      capturedImage = null;
+      resultShown = false;
+      return;
+    }
+
+    if (isAnalyzing) return;
+
+    let imageData = capturedImage;
+
+    // Capture frame from camera.
+    if (!imageData && cameraPreview.srcObject) {
+      if (!cameraPreview.videoWidth || !cameraPreview.videoHeight) {
+        alert("Camera is not ready yet. Please wait a moment.");
+        return;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = cameraPreview.videoWidth;
+      canvas.height = cameraPreview.videoHeight;
+
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        alert("Unable to capture the camera image.");
+        return;
+      }
+
+      context.drawImage(
+        cameraPreview,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      imageData = canvas.toDataURL("image/jpeg");
+      capturedImage = imageData;
+    }
+
+    if (!imageData) {
+      alert("Please capture or upload an image first.");
+      return;
+    }
+
+    stopCamera();
+
+    preview.src = imageData;
+    preview.style.display = "block";
+
+    resultBox.style.display = "block";
+    resultBox.textContent = "Analyzing crop... कृपया प्रतीक्षा करें...";
+
+    isAnalyzing = true;
+    analyzeBtn.disabled = true;
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ imageData })
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        console.error("Backend error:", response.status, data);
+        resultBox.textContent =
+          data.error || "Crop analysis failed. Please try again.";
+        return;
+      }
+
+      const raw = data.result || "";
+
+      if (!raw) {
+        resultBox.textContent = "No analysis was returned. Please try again.";
+        return;
+      }
+
+      const cropMatch = raw.match(/crop:\s*(.+)/i);
+      const diseaseMatch = raw.match(/disease:\s*(.+)/i);
+      const solutionMatch = raw.match(/solution:\s*(.+)/i);
+
+      const crop = cropMatch ? cropMatch[1].trim() : "Unknown";
+      const disease = diseaseMatch
+        ? diseaseMatch[1].trim()
+        : "Unable to identify";
+      const solution = solutionMatch
+        ? solutionMatch[1].trim()
+        : "Consult a local agriculture expert";
 
       resultBox.innerHTML = `
-        <b>🌾 Crop: </b> ${crop}<br>
-        <b>🦠 Disease: </b> ${disease}<br>
-        <b>💡 Solution: </b> ${solution}
+        <b>🌾 Crop:</b> ${escapeHTML(crop)}<br>
+        <b>🦠 Disease:</b> ${escapeHTML(disease)}<br>
+        <b>💡 Solution:</b> ${escapeHTML(solution)}
       `;
 
       analyzeBtn.textContent = "⬅ Back";
       resultShown = true;
 
-    } catch (err) {
-      console.error(err);
-      resultBox.innerHTML = "⚠️ Something went wrong. Try again later.";
-    }
+    } catch (error) {
+      console.error("Backend connection error:", error);
 
-  } else {
-    resultBox.style.display = 'none';
-    preview.style.display = 'none';
-    galleryBtn.style.display = 'inline-block';
-    stepsSection.style.display = 'block';
-    startCamera();
-    resultShown = false;
+      resultBox.textContent =
+        "Cannot connect to the backend. Check that the Node.js server is running on port 3000.";
+    } finally {
+      isAnalyzing = false;
+      analyzeBtn.disabled = false;
+    }
+  });
+
+  function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[character]);
   }
+
+  window.addEventListener("pagehide", stopCamera);
 });
